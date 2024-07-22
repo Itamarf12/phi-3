@@ -7,7 +7,7 @@ from starlette.requests import Request
 
 
 @serve.deployment(num_replicas=2)
-class FruitMarket:
+class RiskyFeatures:
     def __init__(self):
         print("hello")
 
@@ -17,4 +17,4 @@ class FruitMarket:
         #return await self.check_price(fruit, amount)
         return "hello"
 
-deployment_graph = FruitMarket.bind()
+deployment_graph = RiskyFeatures.bind()
