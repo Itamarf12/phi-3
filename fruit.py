@@ -1,7 +1,8 @@
 from ray import serve
 from ray.serve.handle import DeploymentHandle
-#from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
-#from google.cloud import storage
+import torch
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+from google.cloud import storage
 from starlette.requests import Request
 import logging
 
@@ -24,6 +25,8 @@ class RiskyFeatures:
     async def __call__(self, request: Request) -> float:
         #fruit, amount = await request.json()
         #return await self.check_price(fruit, amount)
-        return "hello"
+        ray_serve_logger.warning("aaaaaaaaaaaaaaa  1111111")
+        encoded_key = os.getenv('GCP_CRED')
+        return encoded_key
 
 deployment_graph = RiskyFeatures.bind()
