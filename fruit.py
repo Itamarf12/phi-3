@@ -1,8 +1,8 @@
 from ray import serve
 from ray.serve.handle import DeploymentHandle
-import torch
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
-from google.cloud import storage
+#import torch
+#from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+#from google.cloud import storage
 from starlette.requests import Request
 import logging
 
