@@ -5,6 +5,7 @@ from ray.serve.handle import DeploymentHandle
 #from google.cloud import storage
 from starlette.requests import Request
 import logging
+import os
 
 ray_serve_logger = logging.getLogger("ray.serve")
 BUCKET = 'nonsensitive-data'
