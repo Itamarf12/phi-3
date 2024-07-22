@@ -1,5 +1,8 @@
 from ray import serve
 from ray.serve.handle import DeploymentHandle
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+from google.cloud import storage
+
 
 # These imports are used only for type hints:
 from typing import Dict
