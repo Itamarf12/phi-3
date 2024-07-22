@@ -1,7 +1,7 @@
 from ray import serve
 from ray.serve.handle import DeploymentHandle
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
-from google.cloud import storage
+#from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+#from google.cloud import storage
 from starlette.requests import Request
 import logging
 
