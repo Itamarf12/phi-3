@@ -138,7 +138,7 @@ class RiskyFeatures:
         sentence = None
         if 'title' in req and 'description' in req:
             try:
-                title = req['text']
+                title = req['title']
                 description = req['description']
                 sentence = title + " " + description
                 ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   66666666 {sentence}")
