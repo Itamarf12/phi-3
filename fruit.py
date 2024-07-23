@@ -131,18 +131,23 @@ class RiskyFeatures:
         # ray_serve_logger.warning("aaaaaaaaaaaaaaa  1111111")
         # encoded_key = os.getenv('GCP_CRED')
         # return encoded_key
+        ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   5555555")
         req = await request.json()
         result = {"empty": "empty"}
+        re = None
+        sentence = None
         if 'title' in req and 'description' in req:
             try:
                 title = req['text']
                 description = req['description']
                 sentence = title + " " + description
+                ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   66666666 {sentence}")
                 # re = get_next_word_probabilities(sentence, self.tokenizer, self.device, self.model, top_k=2)
                 re = get_risky_score(sentence, self.tokenizer, DEVICE, self.model)
+                ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   777777777 {re}")
                 result = json.dumps({"issueRiskPredictionConfidence": re})
             except Exception as e:
-                result = json.dumps({"error": "Fail to "})
+                result = json.dumps({"error": f"Fail to  {sentence}   -----     {re}     ----    {e}"})
         else:
             ray_serve_logger.warning(f"Missing text field in the json  request = {req}")
             result = json.dumps({"error": "missing input fields title and description."})
