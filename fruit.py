@@ -7,6 +7,7 @@ from starlette.requests import Request
 import logging
 import os
 import base64
+import json
 
 
 ray_serve_logger = logging.getLogger("ray.serve")
@@ -124,20 +125,27 @@ class RiskyFeatures:
         self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
 
 
-    async def __call__(self, request: Request) -> float:
+    async def __call__(self, request: Request) -> str:
         #fruit, amount = await request.json()
         #return await self.check_price(fruit, amount)
         # ray_serve_logger.warning("aaaaaaaaaaaaaaa  1111111")
         # encoded_key = os.getenv('GCP_CRED')
         # return encoded_key
         req = await request.json()
-        re = 'NO DATA - missing text field'
-        if 'text' in req:
-            sentence = req['text']
-            # re = get_next_word_probabilities(sentence, self.tokenizer, self.device, self.model, top_k=2)
-            re = get_risky_score(sentence, self.tokenizer, DEVICE, self.model)
+        result = {"empty": "empty"}
+        if 'title' in req and 'description' in req:
+            try:
+                title = req['text']
+                description = req['description']
+                sentence = title + " " + description
+                # re = get_next_word_probabilities(sentence, self.tokenizer, self.device, self.model, top_k=2)
+                re = get_risky_score(sentence, self.tokenizer, DEVICE, self.model)
+                result = json.dumps({"issueRiskPredictionConfidence": re})
+            except Exception as e:
+                result = json.dumps({"error": "Fail to "})
         else:
             ray_serve_logger.warning(f"Missing text field in the json  request = {req}")
-        return re
+            result = json.dumps({"error": "missing input fields title and description."})
+        return result
 
 deployment_graph = RiskyFeatures.bind()
