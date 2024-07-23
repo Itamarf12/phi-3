@@ -130,7 +130,7 @@ class RiskyFeatures:
         # ray_serve_logger.warning("aaaaaaaaaaaaaaa  1111111")
         # encoded_key = os.getenv('GCP_CRED')
         # return encoded_key
-        req = await req.json()
+        req = await request.json()
         re = 'NO DATA - missing text field'
         if 'text' in req:
             sentence = req['text']
