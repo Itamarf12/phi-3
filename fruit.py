@@ -127,8 +127,17 @@ class RiskyFeatures:
     async def __call__(self, request: Request) -> float:
         #fruit, amount = await request.json()
         #return await self.check_price(fruit, amount)
-        ray_serve_logger.warning("aaaaaaaaaaaaaaa  1111111")
-        encoded_key = os.getenv('GCP_CRED')
-        return encoded_key
+        # ray_serve_logger.warning("aaaaaaaaaaaaaaa  1111111")
+        # encoded_key = os.getenv('GCP_CRED')
+        # return encoded_key
+        req = await req.json()
+        re = 'NO DATA - missing text field'
+        if 'text' in req:
+            sentence = req['text']
+            # re = get_next_word_probabilities(sentence, self.tokenizer, self.device, self.model, top_k=2)
+            re = get_risky_score(sentence, self.tokenizer, DEVICE, self.model)
+        else:
+            ray_serve_logger.warning(f"Missing text field in the json  request = {req}")
+        return re
 
 deployment_graph = RiskyFeatures.bind()
