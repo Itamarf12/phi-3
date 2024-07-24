@@ -15,7 +15,7 @@ BUCKET = 'nonsensitive-data'
 REGION = 'us-east-1'
 S3_DIRECTORY = 'phi3_finetuned'
 MODEL_LOCAL_DIR = '/tmp/phi3'
-DEVICE = 'cuda'
+DEVICE = 'auto'
 
 
 
@@ -25,13 +25,14 @@ def load_model(model_path):
     ray_serve_logger.warning("Start Model loading ..")
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     compute_dtype = torch.float32
-    device = torch.device(DEVICE)
+    #device = torch.device(DEVICE)
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
         torch_dtype=compute_dtype,
         return_dict=False,
         low_cpu_mem_usage=True,
-        device_map=device,
+        #device_map=device,
+        device_map=DEVICE,
         trust_remote_code=True
     )
     ray_serve_logger.warning(f"Model was loaded successfully.")
@@ -40,7 +41,7 @@ def load_model(model_path):
 
 def get_next_word_probabilities(sentence, tokenizer, device, model, top_k=1):
     # Get the model predictions for the sentence.
-    inputs = tokenizer.encode(sentence, return_tensors="pt").to(device)  # .cuda()
+    inputs = tokenizer.encode(sentence, return_tensors="pt")#.to(device)  # .cuda()
     outputs = model(inputs)
     predictions = outputs[0]
     # Get the next token candidates.
@@ -140,7 +141,7 @@ class RiskyFeatures:
 
 
 
-        #self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
+        self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
         ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   5555555")
         req = await request.json()
         result = {"empty": "empty"}
