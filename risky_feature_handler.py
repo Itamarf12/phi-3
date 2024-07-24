@@ -122,7 +122,7 @@ class RiskyFeatures:
         download_directory(bucket_name, source_directory, destination_directory)
 
         # download_directory_from_s3(aws_access_key_id, aws_secret_access_key, REGION, BUCKET, S3_DIRECTORY, MODEL_LOCAL_DIR)
-        self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
+        #self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
 
 
     async def __call__(self, request: Request) -> str:
@@ -131,6 +131,7 @@ class RiskyFeatures:
         # ray_serve_logger.warning("aaaaaaaaaaaaaaa  1111111")
         # encoded_key = os.getenv('GCP_CRED')
         # return encoded_key
+        self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
         ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   5555555")
         req = await request.json()
         result = {"empty": "empty"}
