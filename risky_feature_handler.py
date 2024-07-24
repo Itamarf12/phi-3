@@ -132,9 +132,15 @@ class RiskyFeatures:
         # ray_serve_logger.warning("aaaaaaaaaaaaaaa  1111111")
         # encoded_key = os.getenv('GCP_CRED')
         # return encoded_key
-        MODEL = "microsoft/Phi-3-medium-128k-instruct"
-        DEVICE = 'auto'
-        model = AutoModelForCausalLM.from_pretrained(MODEL, device_map=DEVICE, trust_remote_code=True)
+        # MODEL = "microsoft/Phi-3-medium-128k-instruct"
+        # DEVICE = 'auto'
+        # model = AutoModelForCausalLM.from_pretrained(MODEL, device_map=DEVICE, trust_remote_code=True)
+
+        bucket_name = "apiiro-trained-models"  # "your-bucket-name"
+        source_directory = "risky-feature-requests/phi-3/"  # "path/to/your/source-file"
+        destination_directory = MODEL_LOCAL_DIR
+        download_directory(bucket_name, source_directory, destination_directory)
+        self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
 
         return "kkkkkkk"
 
