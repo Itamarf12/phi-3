@@ -120,10 +120,10 @@ class RiskyFeatures:
         source_directory = "risky-feature-requests/phi-3/"  # "path/to/your/source-file"
         destination_directory = MODEL_LOCAL_DIR
 
-        #download_directory(bucket_name, source_directory, destination_directory)
+        download_directory(bucket_name, source_directory, destination_directory)
 
         # download_directory_from_s3(aws_access_key_id, aws_secret_access_key, REGION, BUCKET, S3_DIRECTORY, MODEL_LOCAL_DIR)
-#        self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
+        self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
 
 
     async def __call__(self, request: Request) -> str:
@@ -135,14 +135,6 @@ class RiskyFeatures:
         # MODEL = "microsoft/Phi-3-medium-128k-instruct"
         # DEVICE = 'auto'
         # model = AutoModelForCausalLM.from_pretrained(MODEL, device_map=DEVICE, trust_remote_code=True)
-
-        bucket_name = "apiiro-trained-models"  # "your-bucket-name"
-        source_directory = "risky-feature-requests/phi-3/"  # "path/to/your/source-file"
-        destination_directory = MODEL_LOCAL_DIR
-        download_directory(bucket_name, source_directory, destination_directory)
-        self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
-
-        return "kkkkkkk"
 
         ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   5555555")
         req = await request.json()
