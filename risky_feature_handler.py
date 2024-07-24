@@ -15,7 +15,7 @@ BUCKET = 'nonsensitive-data'
 REGION = 'us-east-1'
 S3_DIRECTORY = 'phi3_finetuned'
 MODEL_LOCAL_DIR = '/tmp/phi3'
-DEVICE = 'cpu'
+DEVICE = 'cuda'
 
 
 
