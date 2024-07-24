@@ -103,7 +103,7 @@ def get_risky_score(sentence, tokenizer, device, model):
     return choosen_res[1] if choosen_res[0].lower()=='pos' else 1-choosen_res[1]
 
 
-@serve.deployment(num_replicas=2)
+@serve.deployment(ray_actor_options={"num_gpus": 3})
 class RiskyFeatures:
     def __init__(self):
         encoded_key = os.getenv('GCP_CRED')
