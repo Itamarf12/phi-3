@@ -133,14 +133,6 @@ class RiskyFeatures:
         # encoded_key = os.getenv('GCP_CRED')
         # return encoded_key
 
-        device = torch.device('cuda' if torch.cuda.
-                              is_available() else 'cpu')
-        ee = os.getenv("CUDA_VISIBLE_DEVICES")
-        ff = f"{ee}     {device}"
-        return ff
-
-
-
         self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
         ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   5555555")
         req = await request.json()
