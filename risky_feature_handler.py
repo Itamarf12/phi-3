@@ -41,7 +41,7 @@ def load_model(model_path):
 
 def get_next_word_probabilities(sentence, tokenizer, device, model, top_k=1):
     # Get the model predictions for the sentence.
-    inputs = tokenizer.encode(sentence, return_tensors="pt")#.to(device)  # .cuda()
+    inputs = tokenizer.encode(sentence, return_tensors="pt").to(device)  # .cuda()
     outputs = model(inputs)
     predictions = outputs[0]
     # Get the next token candidates.
@@ -148,7 +148,7 @@ class RiskyFeatures:
                 sentence = title + " " + description
                 ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   66666666 {sentence}")
                 # re = get_next_word_probabilities(sentence, self.tokenizer, self.device, self.model, top_k=2)
-                re = get_risky_score(sentence, self.tokenizer, DEVICE, self.model)
+                re = get_risky_score(sentence, self.tokenizer, 'cuda:0', self.model)
                 ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   777777777 {re}")
                 result = json.dumps({"issueRiskPredictionConfidence": re})
             except Exception as e:
