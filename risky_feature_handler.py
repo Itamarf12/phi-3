@@ -148,7 +148,7 @@ class RiskyFeatures:
                 sentence = title + " " + description
                 ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   66666666 {sentence}")
                 # re = get_next_word_probabilities(sentence, self.tokenizer, self.device, self.model, top_k=2)
-                re = get_risky_score(sentence, self.tokenizer, 'cuda:0', self.model)
+                re = get_risky_score(sentence, self.tokenizer, DEVICE, self.model)  #cuda:0
                 ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   777777777 {re}")
                 result = json.dumps({"issueRiskPredictionConfidence": re})
             except Exception as e:
