@@ -123,12 +123,12 @@ class RiskyFeatures:
         download_directory(bucket_name, source_directory, destination_directory)
 
         # download_directory_from_s3(aws_access_key_id, aws_secret_access_key, REGION, BUCKET, S3_DIRECTORY, MODEL_LOCAL_DIR)
-        #self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
+        self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
 
 
     async def __call__(self, request: Request) -> str:
         ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   5555555")
-        self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
+        #self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
         req = await request.json()
         result = {"empty": "empty"}
         re = None
