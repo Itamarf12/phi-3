@@ -123,19 +123,10 @@ class RiskyFeatures:
         download_directory(bucket_name, source_directory, destination_directory)
 
         # download_directory_from_s3(aws_access_key_id, aws_secret_access_key, REGION, BUCKET, S3_DIRECTORY, MODEL_LOCAL_DIR)
-        self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
+        #self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
 
 
     async def __call__(self, request: Request) -> str:
-        #fruit, amount = await request.json()
-        #return await self.check_price(fruit, amount)
-        # ray_serve_logger.warning("aaaaaaaaaaaaaaa  1111111")
-        # encoded_key = os.getenv('GCP_CRED')
-        # return encoded_key
-        # MODEL = "microsoft/Phi-3-medium-128k-instruct"
-        # DEVICE = 'auto'
-        # model = AutoModelForCausalLM.from_pretrained(MODEL, device_map=DEVICE, trust_remote_code=True)
-
         ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   5555555")
         req = await request.json()
         result = {"empty": "empty"}
