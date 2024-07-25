@@ -128,6 +128,7 @@ class RiskyFeatures:
 
     async def __call__(self, request: Request) -> str:
         ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   5555555")
+        self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
         req = await request.json()
         result = {"empty": "empty"}
         re = None
