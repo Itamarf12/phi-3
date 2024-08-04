@@ -97,6 +97,19 @@ def get_risky_score(sentence, tokenizer, device, model):
     return chosen_res[1] if chosen_res[0].lower() == 'pos' else 1 - chosen_res[1]
 
 
+def is_input_valid(req):
+    title = None
+    description = None
+    if 'title' in req and 'description' in req:
+        title = req['title']
+        description = req['description']
+    if title is None or description is None \
+        or "View in Apiiro" in description or "View full details in Apiiro" in description \
+        or len(description.split(" ")) < 20:
+            return None, None
+    return title, description
+
+
 @serve.deployment(ray_actor_options={"num_gpus": 1})
 class RiskyFeatures:
     def __init__(self):
@@ -121,10 +134,9 @@ class RiskyFeatures:
         req = await request.json()
         confidence = 0
         sentence = None
-        if 'title' in req and 'description' in req:
+        title, description = is_input_valid(req)
+        if title is not None and description is not None:
             try:
-                title = req['title']
-                description = req['description']
                 sentence = title + " " + description
                 ray_serve_logger.debug(f"Is-Risky-Feature input is {sentence}")
                 confidence = get_risky_score(sentence, self.tokenizer, DEVICE, self.model)  # cuda:0
