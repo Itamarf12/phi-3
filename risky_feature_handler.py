@@ -1,5 +1,4 @@
 from ray import serve
-from ray.serve.handle import DeploymentHandle
 import torch
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from google.cloud import storage
@@ -11,27 +10,22 @@ import json
 
 
 ray_serve_logger = logging.getLogger("ray.serve")
-BUCKET = 'nonsensitive-data'
-REGION = 'us-east-1'
-S3_DIRECTORY = 'phi3_finetuned'
 MODEL_LOCAL_DIR = '/tmp/phi3'
-DEVICE = 'cuda:0' #'auto'
-
-
-
+DEVICE = 'cuda:0'  # 'auto'
+MODEL_BUCKET_NAME = "apiiro-trained-models"
+MODEL_BUCKET_DIRECTORY = "risky-feature-requests/phi-3/"
 
 
 def load_model(model_path):
     ray_serve_logger.warning("Start Model loading ..")
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     compute_dtype = torch.float32
-    #device = torch.device(DEVICE)
+    # device = torch.device(DEVICE)
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
         torch_dtype=compute_dtype,
         return_dict=False,
         low_cpu_mem_usage=True,
-        #device_map=device,
         device_map=DEVICE,
         trust_remote_code=True
     )
@@ -73,7 +67,6 @@ def get_first_line(file_path):
         return f"Error: An unexpected error occurred. {str(e)}"
 
 
-
 def download_directory(bucket_name, source_directory, destination_directory):
     """Downloads all files from a specified directory in a bucket to a local directory."""
     # Initialize a client
@@ -94,60 +87,55 @@ def download_directory(bucket_name, source_directory, destination_directory):
             os.makedirs(local_dir)
         # Download the file
         if source_directory != blob.name:
+            ray_serve_logger.debug(f"Is-Risky-Feature - Start download model file {blob.name}.")
             blob.download_to_filename(local_path)
-            print(f"Downloaded {blob.name} to {local_path}")
 
 
 def get_risky_score(sentence, tokenizer, device, model):
     res = get_next_word_probabilities(sentence, tokenizer, device, model, top_k=1)
-    choosen_res = res[0]
-    return choosen_res[1] if choosen_res[0].lower()=='pos' else 1-choosen_res[1]
+    chosen_res = res[0]
+    return chosen_res[1] if chosen_res[0].lower() == 'pos' else 1 - chosen_res[1]
 
 
 @serve.deployment(ray_actor_options={"num_gpus": 1})
 class RiskyFeatures:
     def __init__(self):
         encoded_key = os.getenv('GCP_CRED')
-        ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   22222   {encoded_key}")
+        if encoded_key is None:
+            ray_serve_logger.error("Is-Risky-Feature - Fail to initialize model inference, on download model.  "
+                                   "missing environment variable GCP_CRED")
         decoded_key = base64.b64decode(encoded_key).decode('utf-8')
-        ray_serve_logger.warning(f"aaaaaaaaaaaaaaa 33333   {decoded_key}")
         with open('/tmp/temp_credentials.json', 'w') as temp_file:
             temp_file.write(decoded_key)
-        ray_serve_logger.warning(f"aaaaaaaaaaaaaaa 4444444")
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = '/tmp/temp_credentials.json'
+        ray_serve_logger.debug(f"Is-Risky-Feature - Start to download model from bucket = {MODEL_BUCKET_NAME}, "
+                               f"path = {MODEL_BUCKET_DIRECTORY}  to local path = {MODEL_LOCAL_DIR}")
+        download_directory(MODEL_BUCKET_NAME, MODEL_BUCKET_DIRECTORY, MODEL_LOCAL_DIR)
+        ray_serve_logger.debug(f"Is-Risky-Feature - Model download finished.")
 
-        bucket_name = "apiiro-trained-models"  # "your-bucket-name"
-        source_directory = "risky-feature-requests/phi-3/"  # "path/to/your/source-file"
-        destination_directory = MODEL_LOCAL_DIR
-
-        download_directory(bucket_name, source_directory, destination_directory)
-
-        # download_directory_from_s3(aws_access_key_id, aws_secret_access_key, REGION, BUCKET, S3_DIRECTORY, MODEL_LOCAL_DIR)
+        ray_serve_logger.debug(f"Is-Risky-Feature - Start to load model from {MODEL_LOCAL_DIR}.")
         self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
-
+        ray_serve_logger.debug(f"Is-Risky-Feature - Model loading complete.")
 
     async def __call__(self, request: Request) -> str:
-        ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   5555555")
-        #self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
         req = await request.json()
-        result = {"empty": "empty"}
-        re = None
+        confidence = 0
         sentence = None
         if 'title' in req and 'description' in req:
             try:
                 title = req['title']
                 description = req['description']
                 sentence = title + " " + description
-                ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   66666666 {sentence}")
-                # re = get_next_word_probabilities(sentence, self.tokenizer, self.device, self.model, top_k=2)
-                re = get_risky_score(sentence, self.tokenizer, DEVICE, self.model)  #cuda:0
-                ray_serve_logger.warning(f"aaaaaaaaaaaaaaa   777777777 {re}")
-                result = json.dumps({"issueRiskPredictionConfidence": re})
+                ray_serve_logger.debug(f"Is-Risky-Feature input is {sentence}")
+                confidence = get_risky_score(sentence, self.tokenizer, DEVICE, self.model)  # cuda:0
             except Exception as e:
-                result = json.dumps({"error": f"Fail to  {sentence}   -----     {re}     ----    {e}"})
+                ray_serve_logger.error(f"Error in Is-Risky-Feature. for input {sentence}.")
+                ray_serve_logger.error(f"Error in Is-Risky-Feature. {e}.")
         else:
-            ray_serve_logger.warning(f"Missing text field in the json  request = {req}")
-            result = json.dumps({"error": "missing input fields title and description."})
+            ray_serve_logger.error(f"Missing input fields in the json request = {req}")
+        ray_serve_logger.debug(f"Is-Risky-Feature confidence result is {confidence}")
+        result = json.dumps({"issueRiskPredictionConfidence": confidence})
         return result
+
 
 deployment_graph = RiskyFeatures.bind()
