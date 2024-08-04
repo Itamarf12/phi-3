@@ -10,6 +10,7 @@ import json
 
 
 ray_serve_logger = logging.getLogger("ray.serve")
+ray_serve_logger.setLevel(logging.DEBUG)
 MODEL_LOCAL_DIR = '/tmp/phi3'
 GCP_CREDENTIALS_FILE_PATH = "/tmp/temp_credentials.json"
 DEVICE = 'cuda:0'  # 'auto'
@@ -131,6 +132,9 @@ class RiskyFeatures:
         self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
 
     async def __call__(self, request: Request) -> str:
+        ray_serve_logger.error(f"Is-Risky-Feature-Inference 11111111111 - error")
+        ray_serve_logger.debug(f"Is-Risky-Feature-Inference 11111111111 - debug")
+        ray_serve_logger.info(f"Is-Risky-Feature-Inference 11111111111 - info")
         req = await request.json()
         confidence = 0
         sentence = None
