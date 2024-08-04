@@ -145,7 +145,7 @@ class RiskyFeatures:
         else:
             ray_serve_logger.error(f"Is-Risky-Feature-Inference Missing input fields in the json request = {req}")
         ray_serve_logger.debug(f"Is-Risky-Feature-Inference confidence result is {confidence}")
-        result = json.dumps({"issueRiskPredictionConfidence": confidence})
+        result = {"issueRiskPredictionConfidence": confidence}
         return result
 
 
