@@ -1,6 +1,6 @@
 from ray import serve
 import torch
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from google.cloud import storage
 from starlette.requests import Request
 import logging
@@ -11,13 +11,15 @@ import json
 
 ray_serve_logger = logging.getLogger("ray.serve")
 MODEL_LOCAL_DIR = '/tmp/phi3'
+GCP_CREDENTIALS_FILE_PATH = "/tmp/temp_credentials.json"
 DEVICE = 'cuda:0'  # 'auto'
 MODEL_BUCKET_NAME = "apiiro-trained-models"
 MODEL_BUCKET_DIRECTORY = "risky-feature-requests/phi-3/"
 
 
+
 def load_model(model_path):
-    ray_serve_logger.warning("Start Model loading ..")
+    ray_serve_logger.warning("Is-Risky-Feature-Inference : Start Model loading ..")
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     compute_dtype = torch.float32
     # device = torch.device(DEVICE)
@@ -29,7 +31,7 @@ def load_model(model_path):
         device_map=DEVICE,
         trust_remote_code=True
     )
-    ray_serve_logger.warning(f"Model was loaded successfully.")
+    ray_serve_logger.warning(f"Is-Risky-Feature-Inference : Model was loaded successfully.")
     return model, tokenizer
 
 
@@ -87,7 +89,7 @@ def download_directory(bucket_name, source_directory, destination_directory):
             os.makedirs(local_dir)
         # Download the file
         if source_directory != blob.name:
-            ray_serve_logger.debug(f"Is-Risky-Feature - Start download model file {blob.name}.")
+            ray_serve_logger.debug(f"Is-Risky-Feature-Inference - Start download model file {blob.name}.")
             blob.download_to_filename(local_path)
 
 
@@ -115,20 +117,17 @@ class RiskyFeatures:
     def __init__(self):
         encoded_key = os.getenv('GCP_CRED')
         if encoded_key is None:
-            ray_serve_logger.error("Is-Risky-Feature - Fail to initialize model inference, on download model.  "
+            ray_serve_logger.error("Is-Risky-Feature-Inference - Fail to initialize model inference, on download model.  "
                                    "missing environment variable GCP_CRED")
         decoded_key = base64.b64decode(encoded_key).decode('utf-8')
-        with open('/tmp/temp_credentials.json', 'w') as temp_file:
+        with open(GCP_CREDENTIALS_FILE_PATH, 'w') as temp_file:
             temp_file.write(decoded_key)
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = '/tmp/temp_credentials.json'
-        ray_serve_logger.debug(f"Is-Risky-Feature - Start to download model from bucket = {MODEL_BUCKET_NAME}, "
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GCP_CREDENTIALS_FILE_PATH
+        ray_serve_logger.debug(f"Is-Risky-Feature-Inference - Start to download model from bucket = {MODEL_BUCKET_NAME}, "
                                f"path = {MODEL_BUCKET_DIRECTORY}  to local path = {MODEL_LOCAL_DIR}")
         download_directory(MODEL_BUCKET_NAME, MODEL_BUCKET_DIRECTORY, MODEL_LOCAL_DIR)
-        ray_serve_logger.debug(f"Is-Risky-Feature - Model download finished.")
-
-        ray_serve_logger.debug(f"Is-Risky-Feature - Start to load model from {MODEL_LOCAL_DIR}.")
+        ray_serve_logger.debug(f"Is-Risky-Feature-Inference - Model download finished.")
         self.model, self.tokenizer = load_model(MODEL_LOCAL_DIR)
-        ray_serve_logger.debug(f"Is-Risky-Feature - Model loading complete.")
 
     async def __call__(self, request: Request) -> str:
         req = await request.json()
@@ -138,14 +137,14 @@ class RiskyFeatures:
         if title is not None and description is not None:
             try:
                 sentence = title + " " + description
-                ray_serve_logger.debug(f"Is-Risky-Feature input is {sentence}")
+                ray_serve_logger.debug(f"Is-Risky-Feature-Inference input is {sentence}")
                 confidence = get_risky_score(sentence, self.tokenizer, DEVICE, self.model)  # cuda:0
             except Exception as e:
-                ray_serve_logger.error(f"Error in Is-Risky-Feature. for input {sentence}.")
-                ray_serve_logger.error(f"Error in Is-Risky-Feature. {e}.")
+                ray_serve_logger.error(f"Error in Is-Risky-Feature-Inference. for input {sentence}.")
+                ray_serve_logger.error(f"Is-Risky-Feature-Inference Error in Is-Risky-Feature. {e}.")
         else:
-            ray_serve_logger.error(f"Missing input fields in the json request = {req}")
-        ray_serve_logger.debug(f"Is-Risky-Feature confidence result is {confidence}")
+            ray_serve_logger.error(f"Is-Risky-Feature-Inference Missing input fields in the json request = {req}")
+        ray_serve_logger.debug(f"Is-Risky-Feature-Inference confidence result is {confidence}")
         result = json.dumps({"issueRiskPredictionConfidence": confidence})
         return result
 
