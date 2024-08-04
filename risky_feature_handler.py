@@ -10,7 +10,7 @@ import json
 
 
 ray_serve_logger = logging.getLogger("ray.serve")
-ray_serve_logger.setLevel(logging.DEBUG)
+#ray_serve_logger.setLevel(logging.DEBUG)
 MODEL_LOCAL_DIR = '/tmp/phi3'
 GCP_CREDENTIALS_FILE_PATH = "/tmp/temp_credentials.json"
 DEVICE = 'cuda:0'  # 'auto'
