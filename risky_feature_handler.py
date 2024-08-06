@@ -107,7 +107,7 @@ def is_input_valid(req):
         description = req['description']
     if title is None or description is None \
         or "View in Apiiro" in description or "View full details in Apiiro" in description \
-        or len(description.split(" ")) < 20:
+        or len(description.split(" ")) < 10:
             ray_serve_logger.error(f"Is-Risky-Feature-Inference : Input request is not valid. request = {req}")
             return None, None
     return title, description
